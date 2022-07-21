@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 
 use App\Post;
 use App\Category;
+use App\Tag;
 
 class PostController extends Controller
 {
@@ -18,7 +19,7 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::all();
+        $posts = Post::all();        
 
         return view('admin.posts.index', compact('posts'));
     }
@@ -31,8 +32,9 @@ class PostController extends Controller
     public function create()
     {
         $categories = Category::all();
+        $tags = Tag::all();
 
-        return view('admin.posts.create', compact('categories'));
+        return view('admin.posts.create', compact('categories', 'tags'));
     }
 
     /**
@@ -47,7 +49,8 @@ class PostController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string|max:65535',
             'published' => 'sometimes|accepted',
-            'category_id' => 'nullable|exists:categories,id'
+            'category_id' => 'nullable|exists:categories,id',
+            'tags' => 'nullable|exists:tags,id'
         ]);        
 
         $data = $request->all();
@@ -57,6 +60,10 @@ class PostController extends Controller
         $newPost->slug = $this->getSlug($data['title']);
 
         $newPost->published = isset($data['published']);
+
+        if(isset($data['tags'])) {
+            $newPost->tags()->sync($data['tags']);
+        }
 
         $newPost->save();
 
@@ -83,8 +90,13 @@ class PostController extends Controller
     public function edit(Post $post)
     {
         $categories = Category::all();
+        $tags = Tag::all();
 
-        return view('admin.posts.edit', compact('post', 'categories'));
+        $postTags = $post->tags->map(function ($item) {
+            return $item->id;
+        })->toArray();
+
+        return view('admin.posts.edit', compact('post', 'categories', 'tags', 'postTags'));
     }
 
     /**
@@ -100,7 +112,8 @@ class PostController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string|max:65535',
             'published' => 'sometimes|accepted',
-            'category_id' => 'nullable|exists:categories,id'
+            'category_id' => 'nullable|exists:categories,id',
+            'tags' => 'nullable|exists:tags,id',
         ]);        
         $data = $request->all();
 
@@ -110,6 +123,10 @@ class PostController extends Controller
         $post->fill($data);
 
         $post->published = isset($data['published']);
+
+        $tags = isset($data['tags']) ? $data['tags'] : [];
+
+        $post->tags()->sync($tags);
 
         $post->save();
         

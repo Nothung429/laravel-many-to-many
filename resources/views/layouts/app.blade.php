@@ -45,6 +45,12 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{route('admin.categories.create')}}">Create Category</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{route('admin.tags.index')}}">All Tags</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{route('admin.tags.create')}}">Create Tag</a>
+                        </li>
                     </ul>
 
                     <!-- Right Side Of Navbar -->
